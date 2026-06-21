@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta http-equiv="Cache-Control" content="no-store" />
+<title>Event Booking</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: system-ui, -apple-system, sans-serif;
+    margin: 0; background: #0f1117; color: #e7e9ee;
+    line-height: 1.5;
+  }
+  header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 22px; background: #161922; border-bottom: 1px solid #262b38;
+    position: sticky; top: 0;
+  }
+  header h1 { font-size: 18px; margin: 0; }
+  .wrap { max-width: 880px; margin: 0 auto; padding: 22px; }
+  .card {
+    background: #161922; border: 1px solid #262b38; border-radius: 10px;
+    padding: 18px; margin-bottom: 16px;
+  }
+  h2 { font-size: 15px; margin: 0 0 12px; color: #9aa3b2; text-transform: uppercase; letter-spacing: .5px; }
+  input, select, button {
+    font: inherit; padding: 9px 11px; border-radius: 7px;
+    border: 1px solid #2d3342; background: #0f1117; color: #e7e9ee;
+  }
+  input, select { width: 100%; margin-bottom: 10px; }
+  button {
+    background: #4f7cff; border: none; color: #fff; cursor: pointer; font-weight: 600;
+  }
+  button:hover { background: #3d68e8; }
+  button.ghost { background: transparent; border: 1px solid #2d3342; color: #b8c0cf; }
+  button.small { padding: 6px 12px; font-size: 13px; }
+  .row { display: flex; gap: 10px; flex-wrap: wrap; }
+  .row > * { flex: 1; min-width: 120px; }
+  .event {
+    border: 1px solid #262b38; border-radius: 8px; padding: 14px; margin-bottom: 10px;
+    display: flex; justify-content: space-between; align-items: center; gap: 12px;
+  }
+  .event .meta { font-size: 13px; color: #9aa3b2; }
+  .seats { font-size: 13px; color: #5ad19b; }
+  .seats.low { color: #ffb454; }
+  .seats.none { color: #ff6b6b; }
+  .pill { font-size: 12px; padding: 2px 8px; border-radius: 99px; background: #232838; color: #9aa3b2; }
+  #toast {
+    position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+    background: #232838; border: 1px solid #2d3342; padding: 11px 18px; border-radius: 8px;
+    opacity: 0; transition: opacity .2s; pointer-events: none; max-width: 90%;
+  }
+  #toast.show { opacity: 1; }
+  #toast.err { border-color: #ff6b6b; color: #ff9b9b; }
+  #toast.ok { border-color: #5ad19b; color: #9be8c4; }
+  .muted { color: #6b7385; font-size: 13px; }
+  .hidden { display: none; }
+  label { font-size: 13px; color: #9aa3b2; display: block; margin-bottom: 4px; }
+  .tabs { display: flex; gap: 8px; margin-bottom: 14px; }
+  .tabs button { background: transparent; border: 1px solid #2d3342; color: #9aa3b2; }
+  .tabs button.active { background: #4f7cff; border-color: #4f7cff; color: #fff; }
+</style>
+</head>
+<body>
+<header>
+  <h1>🎫 Event Booking</h1>
+  <div id="userBox" class="row" style="align-items:center; gap:10px;">
+    <span id="whoami" class="muted"></span>
+    <button id="logoutBtn" class="ghost small hidden" onclick="logout()">Log out</button>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <!-- AUTH -->
+  <div id="authView" class="card">
+    <div class="tabs">
+      <button id="tabLogin" class="active" onclick="showTab('login')">Login</button>
+      <button id="tabRegister" onclick="showTab('register')">Register</button>
+    </div>
+
+    <div id="loginForm">
+      <input id="loginEmail" placeholder="Email" value="aria@org.com" />
+      <input id="loginPass" type="password" placeholder="Password" value="Password123" />
+      <button onclick="login()">Login</button>
+      <p class="muted">Seed accounts (password <b>Password123</b>): aria@org.com (organizer) · john@mail.com (customer)</p>
+    </div>
+
+    <div id="registerForm" class="hidden">
+      <input id="regName" placeholder="Name" />
+      <input id="regEmail" placeholder="Email" />
+      <input id="regPass" type="password" placeholder="Password (min 6 chars)" />
+      <label>Role</label>
+      <select id="regRole">
+        <option value="customer">Customer</option>
+        <option value="organizer">Organizer</option>
+      </select>
+      <button onclick="register()">Create account</button>
+    </div>
+  </div>
+
+  <!-- ORGANIZER: create event -->
+  <div id="createView" class="card hidden">
+    <h2>Create an event</h2>
+    <label>Title</label>
+    <input id="evTitle" placeholder="e.g. Summer Music Fest" />
+    <label>Venue</label>
+    <input id="evVenue" placeholder="e.g. Delhi" />
+    <div class="row">
+      <div>
+        <label>Date &amp; time</label>
+        <input id="evDate" type="datetime-local" />
+      </div>
+      <div>
+        <label>Price (₹) — blank = free</label>
+        <input id="evPrice" type="number" placeholder="0" min="0" />
+      </div>
+      <div>
+        <label>Total seats</label>
+        <input id="evSeats" type="number" placeholder="50" min="1" />
+      </div>
+    </div>
+    <button onclick="submitNewEvent()">Create event</button>
+  </div>
+
+  <!-- EVENTS -->
+  <div class="card">
+    <h2>Events</h2>
+    <div class="row" style="margin-bottom:12px;">
+      <input id="search" placeholder="Search title or venue..." oninput="loadEvents()" />
+      <select id="sort" onchange="loadEvents()" style="max-width:160px;">
+        <option value="">Sort: default</option>
+        <option value="date">Sort: date</option>
+        <option value="price">Sort: price</option>
+      </select>
+    </div>
+    <div id="events"></div>
+  </div>
+
+  <!-- CUSTOMER: my bookings -->
+  <div id="bookingsView" class="card hidden">
+    <h2>My bookings</h2>
+    <div id="bookings"></div>
+  </div>
+
+</div>
+
+<div id="toast"></div>
+
+<script>
+const API = '/api/v1';
+let token = localStorage.getItem('token') || null;
+let user = JSON.parse(localStorage.getItem('user') || 'null');
+
+// Surface ANY uncaught error instead of failing silently ("nothing happens").
+window.addEventListener('error', (e) => {
+  showToastSafe('Error: ' + (e.message || 'something broke'), 'err');
+});
+window.addEventListener('unhandledrejection', (e) => {
+  const msg = (e.reason && e.reason.message) || String(e.reason);
+  showToastSafe('Error: ' + msg, 'err');
+});
+function showToastSafe(msg, type) {
+  const t = document.getElementById('toast');
+  if (!t) { alert(msg); return; }
+  t.textContent = msg; t.className = 'show ' + (type || '');
+  setTimeout(() => (t.className = ''), 3000);
+}
+
+// ---- helpers ----
+function toast(msg, type) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'show ' + (type || '');
+  setTimeout(() => (t.className = ''), 2600);
+}
+
+async function api(path, method = 'GET', body) {
+  const headers = { 'Content-Type': 'application/json' };
+  if (token) headers.Authorization = 'Bearer ' + token;
+  const res = await fetch(API + path, {
+    method, headers, body: body ? JSON.stringify(body) : undefined,
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.message || 'Request failed');
+  return data;
+}
+
+function showTab(which) {
+  document.getElementById('tabLogin').classList.toggle('active', which === 'login');
+  document.getElementById('tabRegister').classList.toggle('active', which === 'register');
+  document.getElementById('loginForm').classList.toggle('hidden', which !== 'login');
+  document.getElementById('registerForm').classList.toggle('hidden', which !== 'register');
+}
+
+// ---- auth ----
+async function login() {
+  try {
+    const email = document.getElementById('loginEmail').value.trim();
+    const password = document.getElementById('loginPass').value;
+    const { data } = await api('/auth/login', 'POST', { email, password });
+    setSession(data.token, data.user);
+    toast('Welcome back, ' + data.user.name, 'ok');
+  } catch (e) { toast(e.message, 'err'); }
+}
+
+async function register() {
+  try {
+    const body = {
+      name: document.getElementById('regName').value.trim(),
+      email: document.getElementById('regEmail').value.trim(),
+      password: document.getElementById('regPass').value,
+      role: document.getElementById('regRole').value,
+    };
+    const { data } = await api('/auth/register', 'POST', body);
+    setSession(data.token, data.user);
+    toast('Account created!', 'ok');
+  } catch (e) { toast(e.message, 'err'); }
+}
+
+function setSession(t, u) {
+  token = t; user = u;
+  localStorage.setItem('token', t);
+  localStorage.setItem('user', JSON.stringify(u));
+  render();
+}
+
+function logout() {
+  token = null; user = null;
+  localStorage.removeItem('token');
+  localStorage.removeItem('user');
+  render();
+  toast('Logged out');
+}
+
+// ---- events ----
+async function loadEvents() {
+  try {
+    const search = document.getElementById('search').value.trim();
+    const sort = document.getElementById('sort').value;
+    const qs = new URLSearchParams();
+    if (search) qs.set('search', search);
+    if (sort) qs.set('sort', sort);
+    const { data } = await api('/events' + (qs.toString() ? '?' + qs : ''));
+    const box = document.getElementById('events');
+    if (!data.events.length) { box.innerHTML = '<p class="muted">No events found.</p>'; return; }
+    box.innerHTML = data.events.map(eventCard).join('');
+  } catch (e) { toast(e.message, 'err'); }
+}
+
+function eventCard(ev) {
+  const left = ev.availableSeats;
+  const cls = left === 0 ? 'none' : left <= 5 ? 'low' : '';
+  const when = new Date(ev.date).toLocaleString();
+  const isOwner = user && user.role === 'organizer' && ev.organizerId === user.id;
+  const canBook = user && user.role === 'customer' && left > 0;
+  let actions = '';
+  if (canBook) {
+    actions = '<button class="small" onclick="book(' + ev.id + ')">Book 1 seat</button>';
+  } else if (isOwner) {
+    actions = '<button class="ghost small" onclick="removeEvent(' + ev.id + ')">Delete</button>';
+  } else if (left === 0) {
+    actions = '<span class="pill">Sold out</span>';
+  }
+  return (
+    '<div class="event"><div>' +
+    '<div><b>' + esc(ev.title) + '</b> <span class="pill">₹' + ev.price + '</span></div>' +
+    '<div class="meta">' + esc(ev.venue) + ' · ' + when + '</div>' +
+    '<div class="seats ' + cls + '">' + left + ' / ' + ev.totalSeats + ' seats left</div>' +
+    '</div><div>' + actions + '</div></div>'
+  );
+}
+
+async function submitNewEvent() {
+  const title = document.getElementById('evTitle').value.trim();
+  const venue = document.getElementById('evVenue').value.trim();
+  const dateVal = document.getElementById('evDate').value;
+  const priceVal = document.getElementById('evPrice').value;
+  const seatsVal = document.getElementById('evSeats').value;
+
+  // clear, specific checks so you know exactly what's missing
+  if (!title) return toast('Please enter a title', 'err');
+  if (!venue) return toast('Please enter a venue', 'err');
+  if (!dateVal) return toast('Please pick a date and time', 'err');
+
+  const dateObj = new Date(dateVal);
+  if (isNaN(dateObj.getTime())) return toast('That date looks invalid', 'err');
+  if (dateObj <= new Date()) return toast('Date must be in the future', 'err');
+
+  const seats = Number(seatsVal);
+  if (!seats || seats < 1) return toast('Enter total seats (at least 1)', 'err');
+
+  // blank price means free
+  const price = priceVal === '' ? 0 : Number(priceVal);
+  if (isNaN(price) || price < 0) return toast('Price must be 0 or more', 'err');
+
+  try {
+    await api('/events', 'POST', {
+      title, venue, date: dateObj.toISOString(), price, totalSeats: seats,
+    });
+    toast('Event created \u2705', 'ok');
+    ['evTitle','evVenue','evDate','evPrice','evSeats'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('search').value = '';   // clear filters so the new event is visible
+    document.getElementById('sort').value = '';
+    loadEvents();
+  } catch (e) { toast(e.message, 'err'); }
+}
+
+async function removeEvent(id) {
+  try { await api('/events/' + id, 'DELETE'); toast('Event deleted', 'ok'); loadEvents(); }
+  catch (e) { toast(e.message, 'err'); }
+}
+
+// ---- bookings ----
+async function book(eventId) {
+  try {
+    await api('/bookings', 'POST', { eventId, seats: 1 });
+    toast('Booking confirmed 🎉', 'ok');
+    loadEvents();
+    loadBookings();
+  } catch (e) { toast(e.message, 'err'); }
+}
+
+async function loadBookings() {
+  if (!user || user.role !== 'customer') return;
+  try {
+    const { data } = await api('/bookings/me');
+    const box = document.getElementById('bookings');
+    if (!data.bookings.length) { box.innerHTML = '<p class="muted">No bookings yet.</p>'; return; }
+    box.innerHTML = data.bookings.map(b =>
+      '<div class="event"><div><b>' + esc(b.eventTitle) + '</b>' +
+      '<div class="meta">' + b.seats + ' seat(s) · ₹' + b.totalPrice + ' · ' + b.status + '</div>' +
+      '</div></div>'
+    ).join('');
+  } catch (e) { toast(e.message, 'err'); }
+}
+
+// ---- render based on auth state ----
+function render() {
+  const loggedIn = !!token;
+  document.getElementById('authView').classList.toggle('hidden', loggedIn);
+  document.getElementById('logoutBtn').classList.toggle('hidden', !loggedIn);
+  document.getElementById('whoami').textContent =
+    loggedIn ? (user.name + ' (' + user.role + ')') : '';
+  document.getElementById('createView').classList.toggle('hidden', !(loggedIn && user.role === 'organizer'));
+  document.getElementById('bookingsView').classList.toggle('hidden', !(loggedIn && user.role === 'customer'));
+  loadEvents();
+  loadBookings();
+}
+
+function esc(s) {
+  return String(s).replace(/[&<>"']/g, c =>
+    ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+}
+
+render();
+</script>
+</body>
+</html>
