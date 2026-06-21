@@ -4,357 +4,629 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <meta http-equiv="Cache-Control" content="no-store" />
-<title>Event Booking</title>
+<title>HotSeat — Book events near you</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
 <style>
+  :root {
+    --red: #e11d38;
+    --red-dark: #c2152e;
+    --red-soft: #fde7eb;
+    --ink: #16161d;
+    --muted: #74747f;
+    --line: #ececf1;
+    --bg: #f4f4f6;
+    --card: #ffffff;
+    --ok: #1f9d6b;
+    --warn: #c0791a;
+    --shadow: 0 1px 2px rgba(20,20,30,.04), 0 8px 24px rgba(20,20,30,.05);
+  }
   * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
   body {
-    font-family: system-ui, -apple-system, sans-serif;
-    margin: 0; background: #0f1117; color: #e7e9ee;
-    line-height: 1.5;
+    margin: 0; background: var(--bg); color: var(--ink);
+    font-family: "Hanken Grotesk", system-ui, sans-serif;
+    font-size: 15px; line-height: 1.55;
   }
+  h1, h2, h3 { font-family: "Bricolage Grotesque", "Hanken Grotesk", sans-serif; margin: 0; letter-spacing: -.01em; }
+  a { color: inherit; }
+
+  /* ---------- header ---------- */
   header {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 14px 22px; background: #161922; border-bottom: 1px solid #262b38;
-    position: sticky; top: 0;
+    position: sticky; top: 0; z-index: 20;
+    background: rgba(255,255,255,.92); backdrop-filter: saturate(1.4) blur(8px);
+    border-bottom: 1px solid var(--line);
   }
-  header h1 { font-size: 18px; margin: 0; }
-  .wrap { max-width: 880px; margin: 0 auto; padding: 22px; }
+  .bar-inner {
+    max-width: 1080px; margin: 0 auto; padding: 13px 22px;
+    display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  }
+  .brand { display: flex; align-items: center; gap: 9px; font-family: "Bricolage Grotesque"; font-weight: 800; font-size: 21px; letter-spacing: -.02em; }
+  .brand .mark { color: var(--red); display: flex; }
+  .brand b { color: var(--red); }
+  .who { display: flex; align-items: center; gap: 12px; }
+  .chip {
+    font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: 999px;
+    background: var(--red-soft); color: var(--red-dark); text-transform: capitalize;
+    letter-spacing: .01em;
+  }
+  .who .name { font-weight: 600; font-size: 14px; }
+
+  /* ---------- layout ---------- */
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 26px 22px 60px; }
+  .section-label {
+    font-size: 12px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase;
+    color: var(--muted); margin: 0 0 14px;
+  }
   .card {
-    background: #161922; border: 1px solid #262b38; border-radius: 10px;
-    padding: 18px; margin-bottom: 16px;
+    background: var(--card); border: 1px solid var(--line); border-radius: 16px;
+    box-shadow: var(--shadow); padding: 22px; margin-bottom: 22px;
   }
-  h2 { font-size: 15px; margin: 0 0 12px; color: #9aa3b2; text-transform: uppercase; letter-spacing: .5px; }
-  input, select, button {
-    font: inherit; padding: 9px 11px; border-radius: 7px;
-    border: 1px solid #2d3342; background: #0f1117; color: #e7e9ee;
+
+  /* ---------- buttons & inputs ---------- */
+  button { font-family: inherit; cursor: pointer; }
+  .btn {
+    background: var(--red); color: #fff; border: none; border-radius: 11px;
+    padding: 12px 18px; font-weight: 700; font-size: 15px; letter-spacing: .01em;
+    transition: background .15s ease, transform .05s ease;
   }
-  input, select { width: 100%; margin-bottom: 10px; }
-  button {
-    background: #4f7cff; border: none; color: #fff; cursor: pointer; font-weight: 600;
+  .btn:hover { background: var(--red-dark); }
+  .btn:active { transform: translateY(1px); }
+  .btn.block { width: 100%; }
+  .ghost {
+    background: #fff; color: var(--ink); border: 1px solid var(--line);
+    border-radius: 11px; padding: 10px 16px; font-weight: 600; font-size: 14px;
   }
-  button:hover { background: #3d68e8; }
-  button.ghost { background: transparent; border: 1px solid #2d3342; color: #b8c0cf; }
-  button.small { padding: 6px 12px; font-size: 13px; }
-  .row { display: flex; gap: 10px; flex-wrap: wrap; }
-  .row > * { flex: 1; min-width: 120px; }
-  .event {
-    border: 1px solid #262b38; border-radius: 8px; padding: 14px; margin-bottom: 10px;
-    display: flex; justify-content: space-between; align-items: center; gap: 12px;
+  .ghost:hover { border-color: #d6d6de; background: #fafafb; }
+  .outline {
+    background: #fff; color: var(--red); border: 1.5px solid var(--red);
+    border-radius: 11px; padding: 11px 16px; font-weight: 700; font-size: 14px; width: 100%;
   }
-  .event .meta { font-size: 13px; color: #9aa3b2; }
-  .seats { font-size: 13px; color: #5ad19b; }
-  .seats.low { color: #ffb454; }
-  .seats.none { color: #ff6b6b; }
-  .pill { font-size: 12px; padding: 2px 8px; border-radius: 99px; background: #232838; color: #9aa3b2; }
+  .outline:hover { background: var(--red-soft); }
+  .link-btn { background: none; border: none; color: var(--red); font-weight: 600; padding: 0; }
+
+  .field { margin-bottom: 14px; }
+  .field label { display: block; font-size: 13px; font-weight: 600; color: var(--muted); margin-bottom: 6px; }
+  input, select {
+    width: 100%; font: inherit; color: var(--ink);
+    border: 1px solid var(--line); background: #fff; border-radius: 11px; padding: 12px 14px;
+    transition: border-color .15s, box-shadow .15s;
+  }
+  input::placeholder { color: #b3b3bd; }
+  input:focus, select:focus { outline: none; border-color: var(--red); box-shadow: 0 0 0 3px var(--red-soft); }
+  .row { display: flex; gap: 14px; flex-wrap: wrap; }
+  .row > .field { flex: 1; min-width: 130px; margin-bottom: 0; }
+
+  /* ---------- auth ---------- */
+  .auth { max-width: 440px; margin: 40px auto 0; }
+  .auth .lede { text-align: center; margin-bottom: 22px; }
+  .auth .lede h1 { font-size: 30px; }
+  .auth .lede p { color: var(--muted); margin: 6px 0 0; }
+  .tabs { display: flex; gap: 4px; background: var(--bg); padding: 4px; border-radius: 12px; margin-bottom: 20px; }
+  .tabs button { flex: 1; border: none; background: transparent; color: var(--muted); font-weight: 600; padding: 9px; border-radius: 9px; font-size: 14px; }
+  .tabs button.active { background: #fff; color: var(--ink); box-shadow: var(--shadow); }
+  .seed-note { font-size: 12.5px; color: var(--muted); margin-top: 14px; line-height: 1.7; }
+  .seed-note b { color: var(--ink); }
+
+  /* ---------- events grid + ticket cards ---------- */
+  .toolbar { display: flex; gap: 12px; margin-bottom: 18px; }
+  .toolbar .search { flex: 1; }
+  .toolbar select { max-width: 190px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 18px; }
+
+  .ticket {
+    display: flex; background: var(--card); border: 1px solid var(--line);
+    border-radius: 16px; box-shadow: var(--shadow); position: relative; overflow: hidden;
+  }
+  .rail { width: 8px; background: var(--red); flex: none; }
+  .ticket-body { flex: 1; padding: 18px 20px; min-width: 0; }
+  .ticket-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+  .ticket-head h3 { font-size: 19px; font-weight: 700; line-height: 1.25; }
+  .price {
+    flex: none; font-family: "Bricolage Grotesque"; font-weight: 700; font-size: 15px;
+    color: var(--red-dark); background: var(--red-soft); padding: 4px 11px; border-radius: 9px; white-space: nowrap;
+  }
+  .meta { margin-top: 12px; display: flex; flex-direction: column; gap: 6px; color: var(--muted); font-size: 14px; }
+  .meta span { display: inline-flex; align-items: center; gap: 7px; }
+  .ic { flex: none; color: var(--muted); }
+  .avail { margin-top: 16px; }
+  .bar { height: 6px; background: var(--line); border-radius: 99px; overflow: hidden; }
+  .bar i { display: block; height: 100%; background: var(--red); border-radius: 99px; }
+  .seats { display: block; margin-top: 7px; font-size: 13px; font-weight: 600; }
+  .seats.ok { color: var(--ok); }
+  .seats.low { color: var(--warn); }
+  .seats.sold { color: var(--red); }
+
+  /* stub (action side) with perforation */
+  .stub {
+    width: 196px; flex: none; padding: 18px; position: relative;
+    border-left: 2px dashed var(--line);
+    display: flex; flex-direction: column; justify-content: center; gap: 11px;
+  }
+  .stub::before, .stub::after {
+    content: ""; position: absolute; left: -9px; width: 16px; height: 16px;
+    background: var(--bg); border-radius: 50%;
+  }
+  .stub::before { top: -9px; }
+  .stub::after { bottom: -9px; }
+
+  .stepper { display: flex; align-items: center; justify-content: space-between; border: 1px solid var(--line); border-radius: 11px; overflow: hidden; }
+  .step { width: 42px; height: 42px; border: none; background: #fff; color: var(--red); font-size: 22px; line-height: 1; display: flex; align-items: center; justify-content: center; }
+  .step:hover { background: var(--red-soft); }
+  .step:disabled { color: #cfcfd6; background: #fff; cursor: not-allowed; }
+  .step-count { font-weight: 700; font-size: 17px; min-width: 30px; text-align: center; }
+  .buy { background: var(--red); color: #fff; border: none; border-radius: 11px; padding: 11px 10px; font-weight: 700; font-size: 13.5px; line-height: 1.2; }
+  .buy:hover { background: var(--red-dark); }
+  .status { text-align: center; font-weight: 700; font-size: 14px; color: var(--muted); }
+  .status.sold { color: var(--red); }
+
+  .empty { text-align: center; color: var(--muted); padding: 40px 0; }
+
+  /* my bookings */
+  .booking { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 0; border-bottom: 1px solid var(--line); }
+  .booking:last-child { border-bottom: none; }
+  .booking .bt { font-weight: 700; }
+  .booking .bm { font-size: 13.5px; color: var(--muted); }
+  .qcount { font-family: "Bricolage Grotesque"; font-weight: 700; font-size: 18px; color: var(--red-dark); }
+
+  /* ---------- toast ---------- */
   #toast {
-    position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
-    background: #232838; border: 1px solid #2d3342; padding: 11px 18px; border-radius: 8px;
-    opacity: 0; transition: opacity .2s; pointer-events: none; max-width: 90%;
+    position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%) translateY(8px);
+    background: #fff; border: 1px solid var(--line); border-left: 4px solid var(--muted);
+    box-shadow: 0 10px 30px rgba(20,20,30,.16); padding: 13px 18px; border-radius: 12px;
+    font-weight: 600; font-size: 14px; max-width: 90vw; opacity: 0; pointer-events: none;
+    transition: opacity .2s ease, transform .2s ease;
   }
-  #toast.show { opacity: 1; }
-  #toast.err { border-color: #ff6b6b; color: #ff9b9b; }
-  #toast.ok { border-color: #5ad19b; color: #9be8c4; }
-  .muted { color: #6b7385; font-size: 13px; }
-  .hidden { display: none; }
-  label { font-size: 13px; color: #9aa3b2; display: block; margin-bottom: 4px; }
-  .tabs { display: flex; gap: 8px; margin-bottom: 14px; }
-  .tabs button { background: transparent; border: 1px solid #2d3342; color: #9aa3b2; }
-  .tabs button.active { background: #4f7cff; border-color: #4f7cff; color: #fff; }
+  #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  #toast.ok { border-left-color: var(--ok); }
+  #toast.err { border-left-color: var(--red); }
+
+  .hidden { display: none !important; }
+
+  @media (max-width: 560px) {
+    .grid { grid-template-columns: 1fr; }
+    .ticket { flex-wrap: wrap; }
+    .ticket-body { width: 100%; }
+    .stub { width: 100%; border-left: none; border-top: 2px dashed var(--line); flex-direction: row; align-items: center; }
+    .stub .stepper { flex: 1; }
+    .stub .buy { flex: 1.4; }
+    .stub::before { top: -9px; left: auto; right: 24px; }
+    .stub::after { top: -9px; bottom: auto; left: 24px; }
+    .auth { margin-top: 16px; }
+  }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
 </style>
 </head>
 <body>
+
 <header>
-  <h1>🎫 Event Booking</h1>
-  <div id="userBox" class="row" style="align-items:center; gap:10px;">
-    <span id="whoami" class="muted"></span>
-    <button id="logoutBtn" class="ghost small hidden" onclick="logout()">Log out</button>
+  <div class="bar-inner">
+    <div class="brand">
+      <span class="mark" aria-hidden="true">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+          <path d="M3 8.5A1.5 1.5 0 0 1 4.5 7h15A1.5 1.5 0 0 1 21 8.5v2a2 2 0 0 0 0 4v2A1.5 1.5 0 0 1 19.5 22h-15A1.5 1.5 0 0 1 3 20.5v-2a2 2 0 0 0 0-4v-2Z" stroke="currentColor" stroke-width="1.6"/>
+          <path d="M14 7v15" stroke="currentColor" stroke-width="1.6" stroke-dasharray="2 2.4"/>
+        </svg>
+      </span>
+      Hot<b>Seat</b>
+    </div>
+    <div id="who" class="who"></div>
   </div>
 </header>
 
 <div class="wrap">
 
   <!-- AUTH -->
-  <div id="authView" class="card">
-    <div class="tabs">
-      <button id="tabLogin" class="active" onclick="showTab('login')">Login</button>
-      <button id="tabRegister" onclick="showTab('register')">Register</button>
+  <section id="authView" class="auth">
+    <div class="lede">
+      <h1>Book events near you</h1>
+      <p>Concerts, meetups and shows — reserve your seats in seconds.</p>
     </div>
+    <div class="card">
+      <div class="tabs">
+        <button id="tabLogin" class="active" data-action="show-login">Log in</button>
+        <button id="tabRegister" data-action="show-register">Create account</button>
+      </div>
 
-    <div id="loginForm">
-      <input id="loginEmail" placeholder="Email" value="aria@org.com" />
-      <input id="loginPass" type="password" placeholder="Password" value="Password123" />
-      <button onclick="login()">Login</button>
-      <p class="muted">Seed accounts (password <b>Password123</b>): aria@org.com (organizer) · john@mail.com (customer)</p>
-    </div>
+      <div id="loginForm">
+        <div class="field">
+          <label for="loginEmail">Email</label>
+          <input id="loginEmail" type="email" placeholder="you@email.com" value="aria@org.com" />
+        </div>
+        <div class="field">
+          <label for="loginPass">Password</label>
+          <input id="loginPass" type="password" placeholder="Your password" value="Password123" />
+        </div>
+        <button class="btn block" data-action="login">Log in</button>
+        <p class="seed-note">
+          Demo accounts (password <b>Password123</b>):<br />
+          <b>aria@org.com</b> — organizer (creates events) &nbsp;·&nbsp; <b>john@mail.com</b> — customer (books tickets)
+        </p>
+      </div>
 
-    <div id="registerForm" class="hidden">
-      <input id="regName" placeholder="Name" />
-      <input id="regEmail" placeholder="Email" />
-      <input id="regPass" type="password" placeholder="Password (min 6 chars)" />
-      <label>Role</label>
-      <select id="regRole">
-        <option value="customer">Customer</option>
-        <option value="organizer">Organizer</option>
-      </select>
-      <button onclick="register()">Create account</button>
+      <div id="registerForm" class="hidden">
+        <div class="field">
+          <label for="regName">Full name</label>
+          <input id="regName" placeholder="Your name" />
+        </div>
+        <div class="field">
+          <label for="regEmail">Email</label>
+          <input id="regEmail" type="email" placeholder="you@email.com" />
+        </div>
+        <div class="field">
+          <label for="regPass">Password</label>
+          <input id="regPass" type="password" placeholder="At least 6 characters" />
+        </div>
+        <div class="field">
+          <label for="regRole">I want to</label>
+          <select id="regRole">
+            <option value="customer">Book tickets (customer)</option>
+            <option value="organizer">Host events (organizer)</option>
+          </select>
+        </div>
+        <button class="btn block" data-action="register">Create account</button>
+      </div>
     </div>
-  </div>
+  </section>
 
   <!-- ORGANIZER: create event -->
-  <div id="createView" class="card hidden">
-    <h2>Create an event</h2>
-    <label>Title</label>
-    <input id="evTitle" placeholder="e.g. Summer Music Fest" />
-    <label>Venue</label>
-    <input id="evVenue" placeholder="e.g. Delhi" />
-    <div class="row">
-      <div>
-        <label>Date &amp; time</label>
+  <section id="createView" class="card hidden">
+    <p class="section-label">Host an event</p>
+    <div class="field">
+      <label for="evTitle">Event title</label>
+      <input id="evTitle" placeholder="e.g. Indie Music Night" />
+    </div>
+    <div class="field">
+      <label for="evVenue">Venue</label>
+      <input id="evVenue" placeholder="e.g. Hauz Khas, Delhi" />
+    </div>
+    <div class="row" style="margin-bottom:16px;">
+      <div class="field">
+        <label for="evDate">Date &amp; time</label>
         <input id="evDate" type="datetime-local" />
       </div>
-      <div>
-        <label>Price (₹) — blank = free</label>
+      <div class="field">
+        <label for="evPrice">Price (₹) — leave blank for free</label>
         <input id="evPrice" type="number" placeholder="0" min="0" />
       </div>
-      <div>
-        <label>Total seats</label>
+      <div class="field">
+        <label for="evSeats">Total seats</label>
         <input id="evSeats" type="number" placeholder="50" min="1" />
       </div>
     </div>
-    <button onclick="submitNewEvent()">Create event</button>
-  </div>
+    <button class="btn" data-action="create">Publish event</button>
+  </section>
 
   <!-- EVENTS -->
-  <div class="card">
-    <h2>Events</h2>
-    <div class="row" style="margin-bottom:12px;">
-      <input id="search" placeholder="Search title or venue..." oninput="loadEvents()" />
-      <select id="sort" onchange="loadEvents()" style="max-width:160px;">
-        <option value="">Sort: default</option>
-        <option value="date">Sort: date</option>
-        <option value="price">Sort: price</option>
+  <section>
+    <p class="section-label">What's on</p>
+    <div class="toolbar">
+      <input id="search" class="search" placeholder="Search by title or venue" />
+      <select id="sort">
+        <option value="">Sort by</option>
+        <option value="date">Date — soonest first</option>
+        <option value="price">Price — low to high</option>
       </select>
     </div>
-    <div id="events"></div>
-  </div>
+    <div id="events" class="grid"></div>
+  </section>
 
   <!-- CUSTOMER: my bookings -->
-  <div id="bookingsView" class="card hidden">
-    <h2>My bookings</h2>
+  <section id="bookingsView" class="card hidden" style="margin-top:24px;">
+    <p class="section-label">My bookings</p>
     <div id="bookings"></div>
-  </div>
+  </section>
 
 </div>
 
-<div id="toast"></div>
+<div id="toast" role="status" aria-live="polite"></div>
 
 <script>
-const API = '/api/v1';
-let token = localStorage.getItem('token') || null;
-let user = JSON.parse(localStorage.getItem('user') || 'null');
+  const API = '/api/v1';
+  let token = localStorage.getItem('token') || null;
+  let user = JSON.parse(localStorage.getItem('user') || 'null');
+  let eventsCache = [];
+  const qtyById = {};
 
-// Surface ANY uncaught error instead of failing silently ("nothing happens").
-window.addEventListener('error', (e) => {
-  showToastSafe('Error: ' + (e.message || 'something broke'), 'err');
-});
-window.addEventListener('unhandledrejection', (e) => {
-  const msg = (e.reason && e.reason.message) || String(e.reason);
-  showToastSafe('Error: ' + msg, 'err');
-});
-function showToastSafe(msg, type) {
-  const t = document.getElementById('toast');
-  if (!t) { alert(msg); return; }
-  t.textContent = msg; t.className = 'show ' + (type || '');
-  setTimeout(() => (t.className = ''), 3000);
-}
+  // crafted line icons (not emoji)
+  const ICON_PIN = '<svg class="ic" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 21s-6-5.2-6-10a6 6 0 1 1 12 0c0 4.8-6 10-6 10Z"/><circle cx="12" cy="11" r="2.2"/></svg>';
+  const ICON_CAL = '<svg class="ic" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3.5" y="5" width="17" height="15.5" rx="2.5"/><path d="M3.5 9.5h17M8 3.5v3M16 3.5v3"/></svg>';
 
-// ---- helpers ----
-function toast(msg, type) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.className = 'show ' + (type || '');
-  setTimeout(() => (t.className = ''), 2600);
-}
+  // never fail silently — surface any uncaught error
+  window.addEventListener('error', (e) => toast('Something went wrong: ' + (e.message || 'unknown error'), 'err'));
+  window.addEventListener('unhandledrejection', (e) => toast('Something went wrong: ' + ((e.reason && e.reason.message) || e.reason), 'err'));
 
-async function api(path, method = 'GET', body) {
-  const headers = { 'Content-Type': 'application/json' };
-  if (token) headers.Authorization = 'Bearer ' + token;
-  const res = await fetch(API + path, {
-    method, headers, body: body ? JSON.stringify(body) : undefined,
-  });
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(data.message || 'Request failed');
-  return data;
-}
+  function toast(msg, type) {
+    const t = document.getElementById('toast');
+    if (!t) { return; }
+    t.textContent = msg;
+    t.className = 'show ' + (type || '');
+    clearTimeout(toast._t);
+    toast._t = setTimeout(() => (t.className = ''), 2800);
+  }
 
-function showTab(which) {
-  document.getElementById('tabLogin').classList.toggle('active', which === 'login');
-  document.getElementById('tabRegister').classList.toggle('active', which === 'register');
-  document.getElementById('loginForm').classList.toggle('hidden', which !== 'login');
-  document.getElementById('registerForm').classList.toggle('hidden', which !== 'register');
-}
+  async function api(path, method = 'GET', body) {
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) headers.Authorization = 'Bearer ' + token;
+    const res = await fetch(API + path, { method, headers, body: body ? JSON.stringify(body) : undefined });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.message || 'Request failed');
+    return data;
+  }
 
-// ---- auth ----
-async function login() {
-  try {
+  function esc(s) {
+    return String(s).replace(/[&<>"']/g, (c) => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+  }
+
+  function money(n) { return '₹' + Number(n).toLocaleString('en-IN'); }
+
+  // ---------- auth ----------
+  function showAuth(tab) {
+    const isLogin = tab === 'login';
+    document.getElementById('tabLogin').classList.toggle('active', isLogin);
+    document.getElementById('tabRegister').classList.toggle('active', !isLogin);
+    document.getElementById('loginForm').classList.toggle('hidden', !isLogin);
+    document.getElementById('registerForm').classList.toggle('hidden', isLogin);
+  }
+
+  async function login() {
     const email = document.getElementById('loginEmail').value.trim();
     const password = document.getElementById('loginPass').value;
-    const { data } = await api('/auth/login', 'POST', { email, password });
-    setSession(data.token, data.user);
-    toast('Welcome back, ' + data.user.name, 'ok');
-  } catch (e) { toast(e.message, 'err'); }
-}
-
-async function register() {
-  try {
-    const body = {
-      name: document.getElementById('regName').value.trim(),
-      email: document.getElementById('regEmail').value.trim(),
-      password: document.getElementById('regPass').value,
-      role: document.getElementById('regRole').value,
-    };
-    const { data } = await api('/auth/register', 'POST', body);
-    setSession(data.token, data.user);
-    toast('Account created!', 'ok');
-  } catch (e) { toast(e.message, 'err'); }
-}
-
-function setSession(t, u) {
-  token = t; user = u;
-  localStorage.setItem('token', t);
-  localStorage.setItem('user', JSON.stringify(u));
-  render();
-}
-
-function logout() {
-  token = null; user = null;
-  localStorage.removeItem('token');
-  localStorage.removeItem('user');
-  render();
-  toast('Logged out');
-}
-
-// ---- events ----
-async function loadEvents() {
-  try {
-    const search = document.getElementById('search').value.trim();
-    const sort = document.getElementById('sort').value;
-    const qs = new URLSearchParams();
-    if (search) qs.set('search', search);
-    if (sort) qs.set('sort', sort);
-    const { data } = await api('/events' + (qs.toString() ? '?' + qs : ''));
-    const box = document.getElementById('events');
-    if (!data.events.length) { box.innerHTML = '<p class="muted">No events found.</p>'; return; }
-    box.innerHTML = data.events.map(eventCard).join('');
-  } catch (e) { toast(e.message, 'err'); }
-}
-
-function eventCard(ev) {
-  const left = ev.availableSeats;
-  const cls = left === 0 ? 'none' : left <= 5 ? 'low' : '';
-  const when = new Date(ev.date).toLocaleString();
-  const isOwner = user && user.role === 'organizer' && ev.organizerId === user.id;
-  const canBook = user && user.role === 'customer' && left > 0;
-  let actions = '';
-  if (canBook) {
-    actions = '<button class="small" onclick="book(' + ev.id + ')">Book 1 seat</button>';
-  } else if (isOwner) {
-    actions = '<button class="ghost small" onclick="removeEvent(' + ev.id + ')">Delete</button>';
-  } else if (left === 0) {
-    actions = '<span class="pill">Sold out</span>';
+    if (!email || !password) return toast('Enter your email and password', 'err');
+    try {
+      const { data } = await api('/auth/login', 'POST', { email, password });
+      setSession(data.token, data.user);
+      toast('Welcome back, ' + data.user.name, 'ok');
+    } catch (e) { toast(e.message, 'err'); }
   }
-  return (
-    '<div class="event"><div>' +
-    '<div><b>' + esc(ev.title) + '</b> <span class="pill">₹' + ev.price + '</span></div>' +
-    '<div class="meta">' + esc(ev.venue) + ' · ' + when + '</div>' +
-    '<div class="seats ' + cls + '">' + left + ' / ' + ev.totalSeats + ' seats left</div>' +
-    '</div><div>' + actions + '</div></div>'
-  );
-}
 
-async function submitNewEvent() {
-  const title = document.getElementById('evTitle').value.trim();
-  const venue = document.getElementById('evVenue').value.trim();
-  const dateVal = document.getElementById('evDate').value;
-  const priceVal = document.getElementById('evPrice').value;
-  const seatsVal = document.getElementById('evSeats').value;
+  async function register() {
+    const name = document.getElementById('regName').value.trim();
+    const email = document.getElementById('regEmail').value.trim();
+    const password = document.getElementById('regPass').value;
+    const role = document.getElementById('regRole').value;
+    if (!name) return toast('Enter your name', 'err');
+    if (!email) return toast('Enter your email', 'err');
+    if (password.length < 6) return toast('Password needs at least 6 characters', 'err');
+    try {
+      const { data } = await api('/auth/register', 'POST', { name, email, password, role });
+      setSession(data.token, data.user);
+      toast('Account created. Welcome, ' + data.user.name, 'ok');
+    } catch (e) { toast(e.message, 'err'); }
+  }
 
-  // clear, specific checks so you know exactly what's missing
-  if (!title) return toast('Please enter a title', 'err');
-  if (!venue) return toast('Please enter a venue', 'err');
-  if (!dateVal) return toast('Please pick a date and time', 'err');
+  function setSession(t, u) {
+    token = t; user = u;
+    localStorage.setItem('token', t);
+    localStorage.setItem('user', JSON.stringify(u));
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    render();
+  }
 
-  const dateObj = new Date(dateVal);
-  if (isNaN(dateObj.getTime())) return toast('That date looks invalid', 'err');
-  if (dateObj <= new Date()) return toast('Date must be in the future', 'err');
+  function logout() {
+    token = null; user = null;
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    render();
+    toast('Logged out');
+  }
 
-  const seats = Number(seatsVal);
-  if (!seats || seats < 1) return toast('Enter total seats (at least 1)', 'err');
+  // ---------- events ----------
+  async function loadEvents() {
+    try {
+      const search = document.getElementById('search').value.trim();
+      const sort = document.getElementById('sort').value;
+      const qs = new URLSearchParams();
+      if (search) qs.set('search', search);
+      if (sort) qs.set('sort', sort);
+      const { data } = await api('/events' + (qs.toString() ? '?' + qs : ''));
+      eventsCache = data.events;
+      const box = document.getElementById('events');
+      if (!data.events.length) {
+        box.innerHTML = '<p class="empty">No events match your search yet.</p>';
+        return;
+      }
+      box.innerHTML = data.events.map(eventCard).join('');
+    } catch (e) { toast(e.message, 'err'); }
+  }
 
-  // blank price means free
-  const price = priceVal === '' ? 0 : Number(priceVal);
-  if (isNaN(price) || price < 0) return toast('Price must be 0 or more', 'err');
+  function buyLabel(ev, n) {
+    const noun = n > 1 ? 'tickets' : 'ticket';
+    return ev.price > 0 ? 'Buy ' + n + ' ' + noun + ' · ' + money(n * ev.price) : 'Reserve ' + n + ' ' + noun;
+  }
 
-  try {
-    await api('/events', 'POST', {
-      title, venue, date: dateObj.toISOString(), price, totalSeats: seats,
+  function eventCard(ev) {
+    const left = ev.availableSeats;
+    const total = ev.totalSeats;
+    const pct = total ? Math.round(((total - left) / total) * 100) : 0;
+    const when = new Date(ev.date).toLocaleString('en-IN', {
+      day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit',
     });
-    toast('Event created \u2705', 'ok');
-    ['evTitle','evVenue','evDate','evPrice','evSeats'].forEach(id => document.getElementById(id).value = '');
-    document.getElementById('search').value = '';   // clear filters so the new event is visible
-    document.getElementById('sort').value = '';
-    loadEvents();
-  } catch (e) { toast(e.message, 'err'); }
-}
+    const priceLabel = ev.price > 0 ? money(ev.price) : 'Free';
+    const seatClass = left === 0 ? 'sold' : left <= 5 ? 'low' : 'ok';
+    const seatText = left === 0 ? 'Sold out' : left + ' of ' + total + ' seats left';
 
-async function removeEvent(id) {
-  try { await api('/events/' + id, 'DELETE'); toast('Event deleted', 'ok'); loadEvents(); }
-  catch (e) { toast(e.message, 'err'); }
-}
+    let action;
+    if (left === 0) {
+      action = '<div class="status sold">Sold out</div>';
+    } else if (user && user.role === 'customer') {
+      const n = qtyById[ev.id] || 1;
+      const dis = n <= 1 ? 'disabled' : '';
+      const disMax = n >= left ? 'disabled' : '';
+      action =
+        '<div class="stepper">' +
+          '<button class="step" data-action="dec" data-id="' + ev.id + '" ' + dis + ' aria-label="One fewer ticket">&minus;</button>' +
+          '<span class="step-count" id="qty-' + ev.id + '">' + n + '</span>' +
+          '<button class="step" data-action="inc" data-id="' + ev.id + '" ' + disMax + ' aria-label="One more ticket">&plus;</button>' +
+        '</div>' +
+        '<button class="buy" id="buy-' + ev.id + '" data-action="book" data-id="' + ev.id + '">' + buyLabel(ev, n) + '</button>';
+    } else if (user && user.role === 'organizer' && ev.organizerId === user.id) {
+      action = '<button class="ghost" data-action="delete" data-id="' + ev.id + '">Delete event</button>';
+    } else if (!user) {
+      action = '<button class="outline" data-action="go-auth">Log in to book</button>';
+    } else {
+      action = '<div class="status">Hosted by another organizer</div>';
+    }
 
-// ---- bookings ----
-async function book(eventId) {
-  try {
-    await api('/bookings', 'POST', { eventId, seats: 1 });
-    toast('Booking confirmed 🎉', 'ok');
+    return (
+      '<article class="ticket">' +
+        '<div class="rail" aria-hidden="true"></div>' +
+        '<div class="ticket-body">' +
+          '<div class="ticket-head"><h3>' + esc(ev.title) + '</h3><span class="price">' + priceLabel + '</span></div>' +
+          '<div class="meta">' +
+            '<span>' + ICON_PIN + esc(ev.venue) + '</span>' +
+            '<span>' + ICON_CAL + when + '</span>' +
+          '</div>' +
+          '<div class="avail">' +
+            '<div class="bar"><i style="width:' + pct + '%"></i></div>' +
+            '<span class="seats ' + seatClass + '">' + seatText + '</span>' +
+          '</div>' +
+        '</div>' +
+        '<div class="stub">' + action + '</div>' +
+      '</article>'
+    );
+  }
+
+  function changeQty(id, delta) {
+    const ev = eventsCache.find((e) => e.id === id);
+    if (!ev) return;
+    const cur = qtyById[id] || 1;
+    let next = cur + delta;
+    if (next < 1) next = 1;
+    if (next > ev.availableSeats) next = ev.availableSeats;
+    qtyById[id] = next;
+
+    const q = document.getElementById('qty-' + id);
+    if (q) q.textContent = next;
+    const b = document.getElementById('buy-' + id);
+    if (b) b.textContent = buyLabel(ev, next);
+
+    // refresh the +/- disabled states for this card
+    const stub = b ? b.closest('.stub') : null;
+    if (stub) {
+      const dec = stub.querySelector('[data-action="dec"]');
+      const inc = stub.querySelector('[data-action="inc"]');
+      if (dec) dec.disabled = next <= 1;
+      if (inc) inc.disabled = next >= ev.availableSeats;
+    }
+  }
+
+  async function book(id) {
+    const seats = qtyById[id] || 1;
+    try {
+      await api('/bookings', 'POST', { eventId: id, seats });
+      const noun = seats > 1 ? 'tickets' : 'ticket';
+      toast('Booked ' + seats + ' ' + noun + '. Confirmation on its way.', 'ok');
+      qtyById[id] = 1;
+      loadEvents();
+      loadBookings();
+    } catch (e) { toast(e.message, 'err'); }
+  }
+
+  async function submitNewEvent() {
+    const title = document.getElementById('evTitle').value.trim();
+    const venue = document.getElementById('evVenue').value.trim();
+    const dateVal = document.getElementById('evDate').value;
+    const priceVal = document.getElementById('evPrice').value;
+    const seatsVal = document.getElementById('evSeats').value;
+
+    if (!title) return toast('Add an event title', 'err');
+    if (!venue) return toast('Add a venue', 'err');
+    if (!dateVal) return toast('Pick a date and time', 'err');
+    const dateObj = new Date(dateVal);
+    if (isNaN(dateObj.getTime())) return toast('That date looks invalid', 'err');
+    if (dateObj <= new Date()) return toast('Pick a date in the future', 'err');
+    const seats = Number(seatsVal);
+    if (!seats || seats < 1) return toast('Set the total seats (at least 1)', 'err');
+    const price = priceVal === '' ? 0 : Number(priceVal);
+    if (isNaN(price) || price < 0) return toast('Price must be 0 or more', 'err');
+
+    try {
+      await api('/events', 'POST', { title, venue, date: dateObj.toISOString(), price, totalSeats: seats });
+      toast('Event published', 'ok');
+      ['evTitle','evVenue','evDate','evPrice','evSeats'].forEach((id) => (document.getElementById(id).value = ''));
+      document.getElementById('search').value = '';
+      document.getElementById('sort').value = '';
+      loadEvents();
+    } catch (e) { toast(e.message, 'err'); }
+  }
+
+  async function deleteEvent(id) {
+    try {
+      await api('/events/' + id, 'DELETE');
+      toast('Event deleted', 'ok');
+      loadEvents();
+    } catch (e) { toast(e.message, 'err'); }
+  }
+
+  // ---------- my bookings ----------
+  async function loadBookings() {
+    if (!user || user.role !== 'customer') return;
+    try {
+      const { data } = await api('/bookings/me');
+      const box = document.getElementById('bookings');
+      if (!data.bookings.length) {
+        box.innerHTML = '<p class="empty" style="padding:18px 0;">No bookings yet. Pick an event above to get started.</p>';
+        return;
+      }
+      box.innerHTML = data.bookings.map((b) =>
+        '<div class="booking">' +
+          '<div><div class="bt">' + esc(b.eventTitle) + '</div>' +
+          '<div class="bm">' + b.seats + ' ' + (b.seats > 1 ? 'tickets' : 'ticket') + ' · ' + money(b.totalPrice) + ' · ' + b.status + '</div></div>' +
+          '<div class="qcount">' + b.seats + '</div>' +
+        '</div>'
+      ).join('');
+    } catch (e) { toast(e.message, 'err'); }
+  }
+
+  // ---------- render ----------
+  function render() {
+    const loggedIn = !!token;
+    document.getElementById('authView').classList.toggle('hidden', loggedIn);
+
+    const who = document.getElementById('who');
+    if (loggedIn && user) {
+      who.innerHTML =
+        '<span class="name">' + esc(user.name) + '</span>' +
+        '<span class="chip">' + esc(user.role) + '</span>' +
+        '<button class="ghost" data-action="logout">Log out</button>';
+    } else {
+      who.innerHTML = '';
+    }
+
+    document.getElementById('createView').classList.toggle('hidden', !(loggedIn && user.role === 'organizer'));
+    document.getElementById('bookingsView').classList.toggle('hidden', !(loggedIn && user.role === 'customer'));
+
     loadEvents();
     loadBookings();
-  } catch (e) { toast(e.message, 'err'); }
-}
+  }
 
-async function loadBookings() {
-  if (!user || user.role !== 'customer') return;
-  try {
-    const { data } = await api('/bookings/me');
-    const box = document.getElementById('bookings');
-    if (!data.bookings.length) { box.innerHTML = '<p class="muted">No bookings yet.</p>'; return; }
-    box.innerHTML = data.bookings.map(b =>
-      '<div class="event"><div><b>' + esc(b.eventTitle) + '</b>' +
-      '<div class="meta">' + b.seats + ' seat(s) · ₹' + b.totalPrice + ' · ' + b.status + '</div>' +
-      '</div></div>'
-    ).join('');
-  } catch (e) { toast(e.message, 'err'); }
-}
+  // ---------- one delegated click handler (no inline onclick anywhere) ----------
+  document.addEventListener('click', (e) => {
+    const el = e.target.closest('[data-action]');
+    if (!el) return;
+    const action = el.dataset.action;
+    const id = el.dataset.id ? Number(el.dataset.id) : null;
+    switch (action) {
+      case 'show-login': showAuth('login'); break;
+      case 'show-register': showAuth('register'); break;
+      case 'login': login(); break;
+      case 'register': register(); break;
+      case 'logout': logout(); break;
+      case 'create': submitNewEvent(); break;
+      case 'delete': deleteEvent(id); break;
+      case 'book': book(id); break;
+      case 'inc': changeQty(id, 1); break;
+      case 'dec': changeQty(id, -1); break;
+      case 'go-auth': window.scrollTo({ top: 0, behavior: 'smooth' }); break;
+    }
+  });
 
-// ---- render based on auth state ----
-function render() {
-  const loggedIn = !!token;
-  document.getElementById('authView').classList.toggle('hidden', loggedIn);
-  document.getElementById('logoutBtn').classList.toggle('hidden', !loggedIn);
-  document.getElementById('whoami').textContent =
-    loggedIn ? (user.name + ' (' + user.role + ')') : '';
-  document.getElementById('createView').classList.toggle('hidden', !(loggedIn && user.role === 'organizer'));
-  document.getElementById('bookingsView').classList.toggle('hidden', !(loggedIn && user.role === 'customer'));
-  loadEvents();
-  loadBookings();
-}
+  document.getElementById('search').addEventListener('input', loadEvents);
+  document.getElementById('sort').addEventListener('change', loadEvents);
 
-function esc(s) {
-  return String(s).replace(/[&<>"']/g, c =>
-    ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
-}
-
-render();
+  render();
 </script>
 </body>
 </html>
